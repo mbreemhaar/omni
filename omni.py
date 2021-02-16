@@ -1,8 +1,12 @@
 import importlib
 import pkgutil
+import warnings
+
+import discord
+
 from omni_utils import Command
 from secrets import token
-import discord
+
 
 # Discord client, used to interact with the discord API
 client = discord.Client()
@@ -11,7 +15,7 @@ client = discord.Client()
 prefix = '!'
 
 # Name of the package in which the bot's modules can be found
-module_package = 'modules'
+MODULE_PACKAGE = 'modules'
 
 # Dictionary from lowercase strings to Command objects. Used to lookup the correct command
 commands = {}
@@ -24,29 +28,23 @@ requesting to be updated when certain events occur.
 """
 class OmniInterface():
     def __init__(self):
-        self.client = client # TODO: is this secure?
-        self.prefix = prefix # TODO: update this field for each interface when the prefix is changed dynamically
-
-    """
-    Add a complete Command object to the dictionary of commands
-    """
-    def add_complete_command(self, command):
-        if command.handle in commands:
-            raise UserWarning('The "{}" command is already defined.'.format(command.handle))
-        commands[command.handle.lower()] = command
+        self.client = client
+        self.prefix = prefix
 
     """
     Add a command to the dictionary of commands.
     """
     def add_command(self, function, handle, help_message):
         new_command = Command(function, handle, help_message)
-        self.add_complete_command(new_command)
+        if handle in commands:
+            warnings.warn('The "{}" command is already defined.'.format(handle))
+        commands[handle.lower()] = new_command
 
 
 """
 Called whenever a command is used that could not be found
 """
-def command_not_found(command):
+def get_command_not_found_message(command):
     if command:
         return '"{}" is not a known command, type {}help for a list of available commands.'.format(command, prefix)
     else:
@@ -64,7 +62,7 @@ async def help_command(args, message):
 
     command = commands[args[0].lower()]
     if not command:
-        return await command_not_found(command)
+        return await get_command_not_found_message(command)
     else:
         return command.help_message
 
@@ -91,7 +89,7 @@ commands['help'] = Command(help_command, 'help',
 'Use to receive help on how to use a command. For example:\n{}help roll'.format(prefix))
 
 # Load all modules before running the client
-__load_modules(module_package)
+__load_modules(MODULE_PACKAGE)
 
 
 ################################################################################
@@ -116,7 +114,7 @@ async def on_message(message):
         if command:
             response = await command.function(arguments, message)
         else:
-            response = command_not_found(command_string)
+            response = get_command_not_found_message(command_string)
 
         if response:
             await message.channel.send(response)

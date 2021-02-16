@@ -9,13 +9,14 @@ interface that was placed in the omni variable before init() is called
 """
 def init():
     omni.add_command(roll, 'roll', 'Rolls a 6-sided die, or an n-sided die if an integer n is provided')
-    omni.add_command(marco_polo, 'marco', "He'll be fine")
+    omni.add_command(ping, 'ping', "Send this to see if the bot is alive. If so, it should return 'pong'")
+    omni.add_command(ping, 'ping', "Test")
 
 """
 Test command to see if the bot is alive
 """
-async def marco_polo(args, message):
-    return 'POLO!'
+async def ping(args, message):
+    return 'pong'
 
 """
 Command to roll a die
