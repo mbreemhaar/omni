@@ -1,0 +1,1 @@
+# Omni - A Discord bot that can do all the things!
