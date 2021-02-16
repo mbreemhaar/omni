@@ -8,19 +8,12 @@ init is used to initialize the commands specified in this module, using the
 interface that was placed in the omni variable before init() is called
 """
 def init():
-    omni.add_command(marco_polo, 'marco', "He'll be fine")
     omni.add_command(roll, 'roll', 'Rolls a 6-sided die, or an n-sided die if an integer n is provided')
     omni.add_command(eight_ball, '8ball', "Answers your pressing yes/no questions ending in a question mark, such as:\nShould I eat cereal in the shower?\nAre you sentient?\nPizza?")
     omni.add_command(draw_card, 'drawCard', 'Draws a random card from a standard playing deck')
     omni.add_command(flip_coin, 'flipCoin', 'Flips a coin')
     omni.add_command(lotto, 'lotto', 'Randomly returns one of the arguments provided')
     omni.add_command(shuffle, 'shuffle', 'Randomly shuffles the provided arguments')
-
-"""
-Test command to see if the bot is alive
-"""
-async def marco_polo(args, message):
-    return 'POLO!'
 
 """
 Command to roll a die
