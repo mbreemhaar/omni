@@ -10,3 +10,4 @@ class Command():
         self.handle = handle
         self.function = function
         self.help_message = help_message
+
