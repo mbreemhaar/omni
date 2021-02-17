@@ -1,3 +1,4 @@
+import argparse
 import importlib
 import pkgutil
 import warnings
@@ -5,8 +6,12 @@ import warnings
 import discord
 
 from omni_utils import Command
-from secrets import token
 
+# Get bot token from running arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('token', help='Your Discord bot token. (Make one at www.discord.com/developers)', type=str)
+args = parser.parse_args()
+token = args.token
 
 # Discord client, used to interact with the discord API
 client = discord.Client()
