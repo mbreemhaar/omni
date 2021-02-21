@@ -10,14 +10,19 @@ connected = True
 # Attempt to establish a connection with the database, and simply log any errors
 # if they occur. The bot should still be able to run if no connection can be
 # established.
-try:
-    client = pymongo.MongoClient("mongodb://localhost:27017/", connect=True,
-    serverSelectionTimeoutMS=10)
-    omni_db = client["omni_database"]
-    guild_col = omni_db["guilds"]
-    connected = True
-except (ConnectionFailure, ServerSelectionTimeoutError) as err:
-    print(err)
+def connect_db(mongo_ip, mongo_port):
+    try:
+        client = pymongo.MongoClient("mongodb://{}:{}/".format(mongo_ip, mongo_port), connect=True,
+        serverSelectionTimeoutMS=10)
+        omni_db = client["omni_database"]
+
+        global guild_col
+        guild_col = omni_db["guilds"]
+
+        global connected
+        connected = True
+    except (ConnectionFailure, ServerSelectionTimeoutError) as err:
+        print(err)
 
 
 """
@@ -53,6 +58,3 @@ def get_prefix(guild):
         return DEFAULT_PREFIX
     else:
         return result["prefix"]
-
-
-
