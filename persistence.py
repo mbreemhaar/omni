@@ -1,5 +1,10 @@
+import os
+
 import pymongo
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, WriteError
+
+mongo_ip = os.environ['DB_IP']
+mongo_port = os.environ['DB_PORT']
 
 # DEFAULT_PREFIX that will signify a discord message as a command
 DEFAULT_PREFIX = '!'
@@ -10,7 +15,7 @@ connected = True
 # Attempt to establish a connection with the database, and simply log any errors
 # if they occur. The bot should still be able to run if no connection can be
 # established.
-def connect_db(mongo_ip, mongo_port):
+if mongo_ip and mongo_port:
     try:
         client = pymongo.MongoClient("mongodb://{}:{}/".format(mongo_ip, mongo_port), connect=True,
         serverSelectionTimeoutMS=10)
@@ -23,6 +28,8 @@ def connect_db(mongo_ip, mongo_port):
         connected = True
     except (ConnectionFailure, ServerSelectionTimeoutError) as err:
         print(err)
+else:
+    print('No valid MongoDB ip and/or port given in the DB_IP and DB_PORT environment variables')
 
 
 """

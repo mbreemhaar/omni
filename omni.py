@@ -11,19 +11,12 @@ from omni_utils import Command
 # Get bot token and Mongo address/port from running arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('token', help='Your Discord bot token. (Make one at www.discord.com/developers)', type=str)
-parser.add_argument('--mongoip', dest='mongo_ip', metavar='MongoDB IP', type=str, default='localhost', help='The IP-address of the MongoDB database')
-parser.add_argument('--mongoport', dest='mongo_port', metavar='MongoDB Port', type=str, default='27017', help='The port of the MongoDB database')
 args = parser.parse_args()
 
 token = args.token
-mongo_ip = args.mongo_ip
-mongo_port = args.mongo_port
 
 # Discord client, used to interact with the discord API
 client = discord.Client()
-
-# MongoDB database, used to store data like guild prefix settings etc.
-persistence.connect_db(mongo_ip, mongo_port)
 
 # Name of the package in which the bot's modules can be found
 MODULE_PACKAGE = 'modules'
