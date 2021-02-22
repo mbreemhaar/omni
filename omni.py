@@ -5,19 +5,18 @@ import warnings
 
 import discord
 
+import persistence
 from omni_utils import Command
 
-# Get bot token from running arguments
+# Get bot token and Mongo address/port from running arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('token', help='Your Discord bot token. (Make one at www.discord.com/developers)', type=str)
 args = parser.parse_args()
+
 token = args.token
 
 # Discord client, used to interact with the discord API
 client = discord.Client()
-
-# Prefix that will signify a discord message as a command
-prefix = '!'
 
 # Name of the package in which the bot's modules can be found
 MODULE_PACKAGE = 'modules'
@@ -34,7 +33,12 @@ requesting to be updated when certain events occur.
 class OmniInterface():
     def __init__(self):
         self.client = client
-        self.prefix = prefix
+    
+    """
+    Returns the command prefix used for the specified guild
+    """
+    def get_prefix(self, guild):
+        return persistence.get_prefix(guild)
 
     """
     Add a command to the dictionary of commands.
@@ -49,7 +53,7 @@ class OmniInterface():
 """
 Called whenever a command is used that could not be found
 """
-def get_command_not_found_message(command):
+def get_command_not_found_message(command, prefix):
     if command:
         return '"{}" is not a known command, type {}help for a list of available commands.'.format(command, prefix)
     else:
@@ -67,9 +71,29 @@ async def help_command(args, message):
 
     command = commands[args[0].lower()]
     if not command:
-        return await get_command_not_found_message(command)
+        return await get_command_not_found_message(command, persistence.get_prefix(message.guild))
     else:
         return command.help_message
+
+
+"""
+Function that sets the prefix for the guild in which the command was sent
+"""
+async def set_prefix_command(args, message):
+    if not message.guild:
+        return "I can only set the prefix for a server"
+
+    if not args or args[0].isalnum() or len(args[0]) != 1:
+        return "Please specify a single non-alphanumeric character such as ! or $"
+
+    success = persistence.set_prefix(message.guild, args[0])
+
+    if success:
+        return 'The command prefix is now {}'.format(args[0])
+    else:
+        return 'Something went wrong while setting the command prefix.' + \
+               'It remains "{}". Try again later.'.format(persistence.get_prefix(message.guild))
+
 
 
 """
@@ -91,7 +115,10 @@ def __load_modules(package_name):
 
 # Add core commands to the command dictionary
 commands['help'] = Command(help_command, 'help', 
-'Use to receive help on how to use a command. For example:\n{}help roll'.format(prefix))
+'Use to receive help on how to use a command.')
+
+commands['setprefix'] = Command(set_prefix_command, 'setPrefix', 
+'Set the prefix used to indicate a command to a specified non-alphanumeric character such as ! or $')
 
 # Load all modules before running the client
 __load_modules(MODULE_PACKAGE)
@@ -110,6 +137,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     
+    prefix = persistence.get_prefix(message.guild)
     if message.content.startswith(prefix):
 
         command_string = message.content.split()[0][len(prefix):]
@@ -119,7 +147,7 @@ async def on_message(message):
         if command:
             response = await command.function(arguments, message)
         else:
-            response = get_command_not_found_message(command_string)
+            response = get_command_not_found_message(command_string, prefix)
 
         if response:
             await message.channel.send(response)
