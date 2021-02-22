@@ -3,14 +3,18 @@ import os
 import pymongo
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, WriteError
 
-mongo_ip = os.environ['DB_IP']
-mongo_port = os.environ['DB_PORT']
+try:
+    mongo_ip = os.environ['DB_IP']
+except KeyError:
+    mongo_ip = 'localhost'
+
+try:
+    mongo_port = os.environ['DB_PORT']
+except KeyError:
+    mongo_port = '27017'
 
 # DEFAULT_PREFIX that will signify a discord message as a command
 DEFAULT_PREFIX = '!'
-
-# Whether the initial connection was successfully established
-connected = True
 
 # Attempt to establish a connection with the database, and simply log any errors
 # if they occur. The bot should still be able to run if no connection can be
@@ -23,9 +27,6 @@ if mongo_ip and mongo_port:
 
         global guild_col
         guild_col = omni_db["guilds"]
-
-        global connected
-        connected = True
     except (ConnectionFailure, ServerSelectionTimeoutError) as err:
         print(err)
 else:
