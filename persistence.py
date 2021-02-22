@@ -1,5 +1,4 @@
 import os
-
 import pymongo
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, WriteError
 
@@ -27,10 +26,9 @@ DEFAULT_PREFIX = '!'
 if mongo_ip and mongo_port:
     try:
         client = pymongo.MongoClient("mongodb://{}:{}/".format(mongo_ip, mongo_port), connect=True,
-        serverSelectionTimeoutMS=10)
+                                     serverSelectionTimeoutMS=10)
         omni_db = client[mongo_name]
 
-        global guild_col
         guild_col = omni_db["guilds"]
     except (ConnectionFailure, ServerSelectionTimeoutError) as err:
         print(err)
@@ -38,33 +36,32 @@ else:
     print('No valid MongoDB ip and/or port given in the DB_IP and DB_PORT environment variables')
 
 
-"""
-Save a prefix for a specific guild
-Returns True if the prefix was successfully saved, False otherwise
-"""
 def set_prefix(guild, prefix):
-
+    """
+    Save a prefix for a specific guild
+    Returns True if the prefix was successfully saved, False otherwise
+    """
     try:
         if guild_col.count_documents({"_id": guild.id}):
-            update = {"$set" : {"prefix": prefix}}
+            update = {"$set": {"prefix": prefix}}
             guild_col.update_one({"_id": guild.id}, update)
         else:
             guild_col.insert_one({"_id": guild.id, "prefix": prefix})
-    except WriteError as err:
-        print(err)
+    except WriteError as e:
+        print(e)
         return False
 
     return True
 
 
-"""
-Returns the prefix for a specific guild
-"""
 def get_prefix(guild):
+    """
+    Returns the prefix for a specific guild
+    """
     try:
-        result = guild_col.find_one({"_id":guild.id})
-    except ServerSelectionTimeoutError as err:
-        print(err)
+        result = guild_col.find_one({"_id": guild.id})
+    except ServerSelectionTimeoutError as e:
+        print(e)
         return DEFAULT_PREFIX
 
     if not result:
