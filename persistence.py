@@ -13,6 +13,11 @@ try:
 except KeyError:
     mongo_port = '27017'
 
+try:
+    mongo_name = os.environ['DB_NAME']
+except KeyError:
+    mongo_name = 'omni_database'
+
 # DEFAULT_PREFIX that will signify a discord message as a command
 DEFAULT_PREFIX = '!'
 
@@ -23,7 +28,7 @@ if mongo_ip and mongo_port:
     try:
         client = pymongo.MongoClient("mongodb://{}:{}/".format(mongo_ip, mongo_port), connect=True,
         serverSelectionTimeoutMS=10)
-        omni_db = client["omni_database"]
+        omni_db = client[mongo_name]
 
         global guild_col
         guild_col = omni_db["guilds"]
