@@ -7,6 +7,7 @@ Click [here](https://discord.com/api/oauth2/authorize?client_id=8112351366998917
 - Marco Breemhaar - [mbreemhaar](http://www.github.com/mbreemhaar)
 - Luuk van Dort - [NeonChicken](http://www.github.com/neonchicken)
 - Vincent van Aalten - [Vycton](http://www.github.com/vycton)
+- Toon van Dort - [Tooneytunes](http://www.github.com/tooneytunes)
 
 ## License
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
