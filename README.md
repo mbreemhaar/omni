@@ -22,11 +22,12 @@ If you have any questions, comments or suggestions, please [make a new issue](ht
 ## Contribute
 You can help us to develop Omni. Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Authors
-- Marco Breemhaar - [mbreemhaar](http://www.github.com/mbreemhaar)
-- Luuk van Dort - [NeonChicken](http://www.github.com/neonchicken)
-- Vincent van Aalten - [Vycton](http://www.github.com/vycton)
-- Toon van Dort - [Tooneytunes](http://www.github.com/tooneytunes)
+## Authors and acknowledgements
+- Vincent van Aalten - [Vycton](http://www.github.com/vycton) - _Building the modular feature architecture_
+- Marco Breemhaar - [mbreemhaar](http://www.github.com/mbreemhaar) - _Programming and server management_
+- Luuk van Dort - [NeonChicken](http://www.github.com/neonchicken) - _Building a large part of Omni's features_
+
+Thanks to Toon van Dort for design the beautiful Omni logo and to the creators of [Discord.py](https://discordpy.readthedocs.io/), the awesome framework that Omni was built with.
 
 ## License
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
