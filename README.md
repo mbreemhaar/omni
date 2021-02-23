@@ -17,7 +17,7 @@ The easiest way to get Omni running on your server is by using Docker.
 If you followed all steps on the Discord Developer Portal correctly, you should now see your bot come online in your Discord server and everything should work.
 
 ## Support
-If you have any questions, comments or suggestions, please [make a new issue](https://github.com/mbreemhaar/omni/issues). We will try to get back to you as soon as possible.
+If you have any questions, comments or suggestions, please [make a new issue](https://github.com/mbreemhaar/omni/issues/new/choose). We will try to get back to you as soon as possible.
 
 ## Contribute
 You can help us to develop Omni. Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
