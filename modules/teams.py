@@ -9,6 +9,9 @@ def init():
 
 
 async def teams(args, message):
+    """
+    Creates n evenly divided teams with names provided.
+    """
 
     # Take the number of teams and player names from the given arguments
     try:
