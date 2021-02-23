@@ -10,9 +10,11 @@ To run your own version of Omni, follow the instructions below. To do so, first 
 The easiest way to get Omni running on your server is by using Docker.
 
 1. Download Docker from [docker.com](https://www.docker.com/) and install it on your system.
-2. Use ```docker run mbreemhaar/omni:latest your-bot-token``` to spin up a Docker container.
+2. Now, you have to spin up a MongoDB container which will manage Omni's storage. Make a new directory where you want MongoDB to store its files.
+3. Use ```docker run -d -v /path/to/your/directory:/data/db mongo``` to spin up a Mongo container.
+4. Use ```docker run mbreemhaar/omni:latest your-bot-token``` to spin up an Omni container. This container should now automatically connect to the Mongo container.
 
-If you followed all steps on the Discord Developer Portal correctly, you should now see your bot come online in your Discord server.
+If you followed all steps on the Discord Developer Portal correctly, you should now see your bot come online in your Discord server and everything should work.
 
 ## Support
 If you have any questions, comments or suggestions, please [make a new issue](https://github.com/mbreemhaar/omni/issues). We will try to get back to you as soon as possible.
