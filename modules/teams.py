@@ -20,10 +20,20 @@ async def teams(args, message):
     except (ValueError, IndexError):
         return 'Give me the number of teams you want, followed by the list of player names'
 
-    # If there are more teams than players, that number of teams is impossible to make
+    # If the number of teams is 0 or negative...
+    if n_teams <= 0:
+        return f'I can\'t make {n_teams} teams'
+
+    # If there are no players...
     n_players = len(players)
+    if n_players == 0:
+        return f'I can\'t make teams without any players'
+
+    # If there are more teams than players...
     if n_teams > n_players:
-        return f'I can\'t make {n_teams} teams with only {n_players} players...'
+        pluralize_teams = '' if n_teams == 1 else 's'
+        pluralize_players = '' if n_players == 1 else 's'
+        return f'I can\'t make {n_teams} team{pluralize_teams} with only {n_players} player{pluralize_players}'
 
     # Randomize the order of the list of players
     random.shuffle(players)
