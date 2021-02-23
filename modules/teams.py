@@ -27,11 +27,11 @@ async def teams(args, message):
 
     # Initialize a list to store all teams and set up an iterator to loop over teams in a cycle
     teams_list = [[] for _ in range(n_teams)]
-    teams_iter = cycle(range(n_teams))
+    teams_iter = cycle(teams_list)
 
     # Loop over players and add each one to a team
     for p in players:
-        teams_list[next(teams_iter)].append(p)
+        next(teams_iter).append(p)
 
     # Shuffle the order of the teams so the last won't always be the smallest team
     random.shuffle(teams_list)
