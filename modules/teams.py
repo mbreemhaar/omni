@@ -1,14 +1,11 @@
 import random
 from itertools import cycle
 
-omni = None
+from omni_utils import OmniInterface
+omni = OmniInterface()
 
-
-def init():
-    omni.add_command(teams, 'teams', 'Creates n evenly divided teams with the names provided')
-
-
-async def teams(args, message):
+@omni.command('teams', 'Creates n evenly divided teams with the names provided')
+def teams(args):
     """
     Creates n evenly divided teams with names provided.
     """

@@ -2,18 +2,9 @@ import re
 import socket
 import ipaddress
 
-# This field will contain an OmniInterface object when init() is called
-omni = None
-
-
-def init():
-    """
-    init is used to initialize the commands specified in this module, using the
-    interface that was placed in the omni variable before init() is called
-    """
-    omni.add_command(get_server_status, 'status', 'Ping a server ip:port to see if it is online')
-
-
+from omni_utils import OmniInterface
+omni = OmniInterface()
+    
 def ping_to_ip(ip, port):
     """
     Function that pings to an ip:port combo and returns true if a response from the remote is given
@@ -27,8 +18,8 @@ def ping_to_ip(ip, port):
     except (ConnectionRefusedError, socket.timeout):
         return False
 
-
-async def get_server_status(args, message):
+@omni.command('status', 'Ping a server ip:port to see if it is online')
+def get_server_status(args):
     """
     Command that returns the status of a specific ip:port combination
 
