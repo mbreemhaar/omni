@@ -37,7 +37,7 @@ async def get_server_status(args, message):
     if not args:
         return "Please give me an ip:port to ping to"
 
-    pattern = r'(?:(?P<ip>(?:\d{1,3}.){3}\d{1,3})|(?P<url>(?:\w+.)+\w{2,})):(?P<port>\d+)'
+    pattern = r'(?:(?P<ip>(?:\d{1,3}\.){3}\d{1,3})|(?P<url>(?:\w+\.)+\w{2,})):(?P<port>\d+)'
     regex = re.compile(pattern, re.I)
     match = regex.match(str(args[0]))
 
