@@ -66,7 +66,7 @@ def help_command(args, message):
 
 @core_interface.command('setPrefix', 'Set the prefix used to indicate a command \
 to a specified non-alphanumeric character such as ! or $')
-def set_prefix_command(message):
+def set_prefix_command(args, message):
     """
     Function that sets the prefix for the guild in which the command was sent
     """
