@@ -95,6 +95,21 @@ async def set_prefix_command(args, message):
                'It remains "{}". Try again later.'.format(persistence.get_prefix(message.guild))
 
 
+"""
+Function that retrieves the prefix for the guild in which the command was sent
+"""
+async def get_prefix_command(args, message):
+    if not message.guild:
+        return "I can only retrieve the prefix for a server"
+    
+    prefix = persistence.get_prefix(message.guild)
+    
+    response = "I am currently responding to the following prefix: {}".format(prefix)
+
+    if message.content.startswith(prefix):
+        response += "\nBut you already knew that, it seems..."
+    return response
+
 
 """
 Provides each module with an OmniInterface, and calls their init() function.
@@ -120,6 +135,9 @@ commands['help'] = Command(help_command, 'help',
 commands['setprefix'] = Command(set_prefix_command, 'setPrefix', 
 'Set the prefix used to indicate a command to a specified non-alphanumeric character such as ! or $')
 
+commands['getprefix'] = Command(get_prefix_command, 'getPrefix',
+'Show the command prefix that Omni will currently respond to.')
+
 # Load all modules before running the client
 __load_modules(MODULE_PACKAGE)
 
@@ -137,20 +155,41 @@ async def on_message(message):
     if message.author == client.user:
         return
     
+    # The command prefix for the guild that the message was sent in
     prefix = persistence.get_prefix(message.guild)
-    if message.content.startswith(prefix):
 
-        command_string = message.content.split()[0][len(prefix):]
-        arguments = message.content.split()[1:]
-        command = commands.get(command_string.lower(), None)
+    # The string indicating that the bot is being mentioned. e.g. '@Omni' in the
+    # discord client.
+    mention = "<@!{}>".format(client.user.id)
 
-        if command:
-            response = await command.function(arguments, message)
-        else:
-            response = get_command_not_found_message(command_string, prefix)
+    content = message.content
 
-        if response:
-            await message.channel.send(response)
+    # The string representing the command, and the arguments following it are
+    # extracted differently depending on how the bot is addressed
+    if content.startswith(mention):
+        # If the bot is addressed by starting the message with mentioning it,
+        # the command string is interpreted to be the first word in the message
+        # after the mention
+        after_mention = content[len(mention):].lstrip()
+        command_string = after_mention.split()[0]
+        arguments = after_mention.split()[1:]
+    elif content.startswith(prefix):
+        # If the bot is addressed by the guild's prefix, the command string is
+        # interpreted to be the first word in the message, minus the prefix.
+        command_string = content.split()[0][len(prefix):]
+        arguments = content.split()[1:]
+    else:
+        return
     
+    command = commands.get(command_string.lower(), None)
+
+    if command:
+        response = await command.function(arguments, message)
+    else:
+        response = get_command_not_found_message(command_string, prefix)
+
+    if response:
+        await message.channel.send(response)
+
 # Finally, start the bot by running the client
 client.run(token)
