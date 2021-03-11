@@ -27,7 +27,7 @@ Omni uses the Discord<span></span>.py framework, of which the documentation can 
 
 ### Requirements
 #### Python 3
-To be able to run Omni, you will need Python 3.5.3 or higher. We will assume you already have Python installed on your system. If you don't, have a look [here](https://realpython.com/installing-python/) to see how you can install it.
+To be able to run Omni, you will need Python 3.8 or higher. We will assume you already have Python installed on your system. If you don't, have a look [here](https://realpython.com/installing-python/) to see how you can install it.
 
 #### MongoDB
 To store data like prefix settings and game scores, Omni uses MongoDB. Some features, like ```!teams``` and ```!roll``` will work without MongoDB, but we still recommend installing it. Instructions for this can be found [here](https://docs.mongodb.com/guides/server/install/).
