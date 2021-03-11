@@ -138,19 +138,28 @@ async def on_message(message):
         return
     
     prefix = persistence.get_prefix(message.guild)
-    if message.content.startswith(prefix):
+    mention = "<@!{}>".format(client.user.id)
+    content = message.content
 
-        command_string = message.content.split()[0][len(prefix):]
-        arguments = message.content.split()[1:]
-        command = commands.get(command_string.lower(), None)
-
-        if command:
-            response = await command.function(arguments, message)
-        else:
-            response = get_command_not_found_message(command_string, prefix)
-
-        if response:
-            await message.channel.send(response)
+    if content.startswith(mention):
+        after_mention = content[len(mention):].lstrip()
+        command_string = after_mention.split()[0]
+        arguments = after_mention.split()[1:]
+    elif content.startswith(prefix):
+        command_string = content.split()[0][len(prefix):]
+        arguments = content.split()[1:]
+    else:
+        return
     
+    command = commands.get(command_string.lower(), None)
+
+    if command:
+        response = await command.function(arguments, message)
+    else:
+        response = get_command_not_found_message(command_string, prefix)
+
+    if response:
+        await message.channel.send(response)
+
 # Finally, start the bot by running the client
 client.run(token)
