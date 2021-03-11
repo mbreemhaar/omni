@@ -44,6 +44,7 @@ To store data like prefix settings and game scores, Omni uses MongoDB. Some feat
 - Vincent van Aalten - [Vycton](http://www.github.com/vycton) - _Building the modular feature architecture_
 - Marco Breemhaar - [mbreemhaar](http://www.github.com/mbreemhaar) - _Programming and server management_
 - Luuk van Dort - [NeonChicken](http://www.github.com/neonchicken) - _Building a large part of Omni's features_
+- Tom Hoevers - [Snailpower](http://www.github.com/snailpower) - _Building the server status command_
 
 Thanks to Toon van Dort for design the beautiful Omni logo and to the creators of [Discord.py](https://discordpy.readthedocs.io/), the awesome framework that Omni was built with.
 
