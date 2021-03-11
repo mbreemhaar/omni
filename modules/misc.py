@@ -1,11 +1,12 @@
-omni = None
-
-def init():
-    omni.add_command(ping, 'ping', 'Check if the bot is alive')
+from omni_utils import OmniInterface
+omni = OmniInterface()
 
 
-"""
-Test command to check if the bot is alive
-"""
-async def ping(args, message):
+@omni.command('ping', 'Test command to check if the bot is alive')
+def ping():
+    """
+    Test command to check if the bot is alive. The bot should respond with 'pong'
+    in the chat in which the command was sent.
+    """
+
     return 'pong'
