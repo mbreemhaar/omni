@@ -21,7 +21,7 @@ except KeyError:
 DEFAULT_PREFIX = '!'
 
 # Number of milliseconds before a database request times out
-TIMEOUT_MS = 5000
+TIMEOUT_MS = 2000
 
 # Whether or not there is a connection to the database. Used to skip waiting for
 # a timeout when it is known there is no connection
@@ -34,9 +34,11 @@ if mongo_ip and mongo_port:
     try:
         client = pymongo.MongoClient("mongodb://{}:{}/".format(mongo_ip, mongo_port), connect=True,
                                      serverSelectionTimeoutMS=TIMEOUT_MS)
-        omni_db = client[mongo_name]
 
+        omni_db = client[mongo_name]
         guild_col = omni_db["guilds"]
+
+        client.admin.command('ismaster') #test connection
         connected = True
     except (ConnectionFailure, ServerSelectionTimeoutError) as err:
         print("Error connecting to the mongoDB database:\n{}".format(err))

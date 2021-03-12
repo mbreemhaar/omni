@@ -1,34 +1,12 @@
-from enum import Enum
-import discord
 # This module provides utility classes that enable simplified communication
 # between the programmer and the Omni interface
 
-class Event(Enum):
-    MESSAGE = 'MESSAGE'
-    MESSAGE_DELETED = 'MESSAGE_DELETED'
-    MESSAGE_EDITED = 'MESSAGE_EDITED'
 
-    @staticmethod
-    def is_compatible(discord_object, event):
-        compatibility = {
-        Event.MESSAGE : (discord.abc.User, discord.Guild, discord.TextChannel, 
-        discord.DMChannel, discord.GroupChannel),
-
-        Event.MESSAGE_DELETED : (discord.Message, discord.Guild, 
-        discord.TextChannel, discord.DMChannel, discord.GroupChannel),
-
-        Event.MESSAGE_EDITED : (discord.Message, discord.Guild, 
-        discord.TextChannel, discord.DMChannel, discord.GroupChannel)
-        }
-
-        compatible_classes = compatibility.get(event, [])
-        compatible_types = [c.__name__ for c in compatible_classes]
-
-        for discord_class in compatible_classes:
-            if isinstance(discord_object, discord_class):
-                return True, compatible_types
-        
-        return False, compatible_types
+class Subscription():
+    def __init__(self, event, function):
+        self.event = event
+        self.id = event.discord_object.id
+        self.function = function
 
 class Command():
     """
@@ -41,36 +19,6 @@ class Command():
         self.help_message = help_message
 
 
-class Subscription():
-
-    def __init__(self, discord_object, create_function = None):
-        if not hasattr(discord_object, 'id'):
-            raise TypeError("""A subscription was created for object:\n
-            {}\n
-            Of type: {}\n
-            This object does not have an id attribute, and hence the subscription 
-            is not valid.""".format(discord_object, type(discord_object)))
-        
-        self.discord_object = discord_object
-
-        self.create_function = create_function
-        self.event_dict = {}
-    
-    def __getitem__(self, event):
-        return self.event_dict.get(event, None)
-    
-    def __setitem__(self, event, event_function):
-        compatible, compatible_types = Event.is_compatible(self.discord_object, event)
-        if not compatible:
-            raise TypeError("""
-            A function for event {} is being implemented in a subscription for 
-            an object with type {}, but the event is only compatible with 
-            objects of type:\n{}
-            """.format(event, type(self.discord_object), compatible_types))
-        self.event_dict[event] = event_function
-
-
-
 class OmniInterface():
     """
     Interface class that modules use to interact with the Omni architecture.
@@ -80,6 +28,7 @@ class OmniInterface():
         # Commands being added are stored into the buffer until flush_buffers is called
         self.command_buffer = []
         self.subscription_buffer = []
+        self.message_buffer = []
         self.module_name = None
 
     def add_command(self, command):
@@ -110,11 +59,9 @@ class OmniInterface():
     def add_subscription(self, subscription):
         self.subscription_buffer.append(subscription)
 
-    def subscribe(self, discord_object, create_function = None):
-        sub = Subscription(discord_object, create_function)
-        self.add_subscription(sub)
-        return sub
-
+    def subscribe(self, event, function):
+        subscription = Subscription(event, function)
+        self.add_subscription(subscription)
 
     def flush_buffers(self):
         """

@@ -9,7 +9,8 @@ from inspect import signature, iscoroutinefunction
 import discord
 
 import persistence
-from omni_utils import OmniInterface, Event
+from omni_utils import OmniInterface
+from omni_events import *
 
 # Get bot token and Mongo address/port from running arguments
 parser = argparse.ArgumentParser()
@@ -130,7 +131,7 @@ def interface_add_command(self, command):
     commands[command.handle.lower()] = command
 
 def interface_add_subscription(self, subscription):
-    if not subscriptions[subscription.id]:
+    if not subscriptions.get(subscription.id, None):
         subscriptions[subscription.id] = []
     subscriptions[subscription.id].append(subscription)
 
@@ -195,14 +196,14 @@ async def fluid_call(callable_object, arg_dict):
     else:
         return callable_object(**final_args)
 
-async def delegate_event(event, relevant_ids, arg_dict):
+async def delegate_event(relevant_ids, arg_dict):
+    print(subscriptions)
+    print(relevant_ids)
     for relevant_id in relevant_ids:
         for sub in subscriptions.get(relevant_id, []):
-            function = sub[event]
-            if not function: continue
+            function = sub.function
             call = fluid_call(function, arg_dict)
             asyncio.create_task(call)
-
 
 @client.event
 async def on_ready():
@@ -211,14 +212,13 @@ async def on_ready():
 @client.event
 async def on_message(message):
     arg_dict = {
-            'message':message,
-            'channel':message.channel,
-            'guild':message.guild,
-            'author':message.author
+        'message':message,
+        'channel':message.channel,
+        'guild':message.guild,
+        'author':message.author
     }
 
-    relevant_ids = [message.author.id, message.channel.id, message.guild.id]
-    delegate_event(Event.MESSAGE, relevant_ids, arg_dict)
+    await delegate_event(MessageSentEvent.get_relevant_ids(message), arg_dict)
 
     if message.author == client.user:
         return
@@ -259,6 +259,17 @@ async def on_message(message):
 
     if response:
         await message.channel.send(response)
+
+@client.event
+async def on_message_delete(message):
+    arg_dict = {
+        'message':message,
+        'channel':message.channel,
+        'guild':message.guild,
+        'author':message.author
+    }
+
+    await delegate_event(MessageDeletedEvent.get_relevant_ids(message), arg_dict)
 
 # Finally, start the bot by running the client
 client.run(token)

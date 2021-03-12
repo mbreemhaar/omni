@@ -1,4 +1,5 @@
 from omni_utils import OmniInterface
+from omni_events import MessageDeletedEvent
 omni = OmniInterface()
 
 
@@ -10,3 +11,12 @@ def ping():
     """
 
     return 'pong'
+
+async def precious_deleted(channel):
+    await channel.send(":(")
+
+@omni.command('precious', 'Test command to see if subscriptions work')
+async def precious(channel):
+    message = await channel.send("Don't delete this!")
+    event = MessageDeletedEvent(message)
+    omni.subscribe(event, precious_deleted)
