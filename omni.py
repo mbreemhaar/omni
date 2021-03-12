@@ -3,11 +3,13 @@ import importlib
 import pkgutil
 import warnings
 import types
+import asyncio
+from inspect import signature, iscoroutinefunction
 
 import discord
 
 import persistence
-from omni_utils import OmniInterface
+from omni_utils import OmniInterface, Event
 
 # Get bot token and Mongo address/port from running arguments
 parser = argparse.ArgumentParser()
@@ -24,6 +26,9 @@ MODULE_PACKAGE = 'modules'
 
 # Dictionary from lowercase strings to Command objects. Used to lookup the correct command
 commands = {}
+
+# Dictionary from Discord object id's to a list of Subscription objects
+subscriptions = {}
 
 # List of the interfaces that are loaded during startup
 interfaces = []
@@ -124,6 +129,11 @@ def interface_add_command(self, command):
         but it already existed. New command was not added""".format(command.handle, self.module_name))
     commands[command.handle.lower()] = command
 
+def interface_add_subscription(self, subscription):
+    if not subscriptions[subscription.id]:
+        subscriptions[subscription.id] = []
+    subscriptions[subscription.id].append(subscription)
+
 
 def __load_modules(package_name):
     """
@@ -152,6 +162,7 @@ def __init_interfaces():
     for interface in interfaces:
         interface.get_prefix = types.MethodType(interface_get_prefix, interface)
         interface.add_command = types.MethodType(interface_add_command, interface)
+        interface.add_subscription = types.MethodType(interface_add_subscription, interface)
         interface.flush_buffers()
 
 # Load all modules and initialize their interfaces before running the client
@@ -162,12 +173,53 @@ __init_interfaces()
 #                                Client events                                 #
 ################################################################################
 
+async def fluid_call(callable_object, arg_dict):
+    object_signature = signature(callable_object)
+    object_parameters = [param for param in object_signature.parameters]
+
+    provided_params = arg_dict.keys()
+
+    final_args = {}
+    for param in provided_params:
+        if param in object_parameters:
+            final_args[param] = arg_dict[param]
+            object_parameters.remove(param)
+    
+    if object_parameters:
+        raise TypeError("""Error in fluid call:\n Callable {} requires the 
+        following arguments that were not provided:\n{}
+        """.format(callable_object, object_parameters))
+    
+    if iscoroutinefunction(callable_object):
+        return await callable_object(**final_args)
+    else:
+        return callable_object(**final_args)
+
+async def delegate_event(event, relevant_ids, arg_dict):
+    for relevant_id in relevant_ids:
+        for sub in subscriptions.get(relevant_id, []):
+            function = sub[event]
+            if not function: continue
+            call = fluid_call(function, arg_dict)
+            asyncio.create_task(call)
+
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
 @client.event
 async def on_message(message):
+    arg_dict = {
+            'message':message,
+            'channel':message.channel,
+            'guild':message.guild,
+            'author':message.author
+    }
+
+    relevant_ids = [message.author.id, message.channel.id, message.guild.id]
+    delegate_event(Event.MESSAGE, relevant_ids, arg_dict)
+
     if message.author == client.user:
         return
     
@@ -197,10 +249,11 @@ async def on_message(message):
     else:
         return
     
+    arg_dict['args'] = arguments
     command = commands.get(command_string.lower(), None)
 
     if command:
-        response = await command.execute(arguments, message)
+        response = await fluid_call(command.function, arg_dict)
     else:
         response = get_command_not_found_message(command_string, prefix)
 

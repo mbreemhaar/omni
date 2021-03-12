@@ -1,31 +1,34 @@
-from inspect import signature, iscoroutinefunction
-
+from enum import Enum
+import discord
 # This module provides utility classes that enable simplified communication
 # between the programmer and the Omni interface
 
-async def fluid_call(callable_object, arg_dict):
-    object_signature = signature(callable_object)
-    object_parameters = [param for param in object_signature.parameters]
+class Event(Enum):
+    MESSAGE = 'MESSAGE'
+    MESSAGE_DELETED = 'MESSAGE_DELETED'
+    MESSAGE_EDITED = 'MESSAGE_EDITED'
 
-    provided_params = arg_dict.keys()
+    @staticmethod
+    def is_compatible(discord_object, event):
+        compatibility = {
+        Event.MESSAGE : (discord.abc.User, discord.Guild, discord.TextChannel, 
+        discord.DMChannel, discord.GroupChannel),
 
-    final_args = {}
-    for param in provided_params:
-        if param in object_parameters:
-            final_args[param] = arg_dict[param]
-            object_parameters.remove(param)
-    
-    if object_parameters:
-        raise TypeError("""Error in fluid call:\n Callable {} requires the 
-        following arguments that were not provided:\n{}
-        """.format(callable_object, object_parameters))
-    
-    if iscoroutinefunction(callable_object):
-        return await callable_object(**final_args)
-    else:
-        return callable_object(**final_args)
+        Event.MESSAGE_DELETED : (discord.Message, discord.Guild, 
+        discord.TextChannel, discord.DMChannel, discord.GroupChannel),
 
+        Event.MESSAGE_EDITED : (discord.Message, discord.Guild, 
+        discord.TextChannel, discord.DMChannel, discord.GroupChannel)
+        }
 
+        compatible_classes = compatibility.get(event, [])
+        compatible_types = [c.__name__ for c in compatible_classes]
+
+        for discord_class in compatible_classes:
+            if isinstance(discord_object, discord_class):
+                return True, compatible_types
+        
+        return False, compatible_types
 
 class Command():
     """
@@ -36,19 +39,6 @@ class Command():
         self.handle = handle
         self.function = function
         self.help_message = help_message
-    
-    async def execute(self, arguments, message):
-        """
-        Does a fluid call on the command function.
-        """
-        arg_dict = {
-            'args':arguments,
-            'message':message,
-            'channel':message.channel,
-            'guild':message.guild,
-            'author':message.author
-        }
-        return await fluid_call(self.function, arg_dict)
 
 
 class Subscription():
@@ -61,13 +51,24 @@ class Subscription():
             This object does not have an id attribute, and hence the subscription 
             is not valid.""".format(discord_object, type(discord_object)))
         
-        self.id = discord_object.id
+        self.discord_object = discord_object
+
         self.create_function = create_function
-        self.create()
+        self.event_dict = {}
     
-    def create(self):
-        if self.create_function:
-            self.create_function(self)
+    def __getitem__(self, event):
+        return self.event_dict.get(event, None)
+    
+    def __setitem__(self, event, event_function):
+        compatible, compatible_types = Event.is_compatible(self.discord_object, event)
+        if not compatible:
+            raise TypeError("""
+            A function for event {} is being implemented in a subscription for 
+            an object with type {}, but the event is only compatible with 
+            objects of type:\n{}
+            """.format(event, type(self.discord_object), compatible_types))
+        self.event_dict[event] = event_function
+
 
 
 class OmniInterface():
