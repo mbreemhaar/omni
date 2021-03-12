@@ -19,8 +19,10 @@ args = parser.parse_args()
 
 token = args.token
 
-# Discord client, used to interact with the discord API
-client = discord.Client()
+# Initialize Discord client, used to interact with the discord API
+intents = discord.Intents().default()
+intents.members = True
+client = discord.Client(intents=intents)
 
 # Name of the package in which the bot's modules can be found
 MODULE_PACKAGE = 'modules'
@@ -196,11 +198,11 @@ async def fluid_call(callable_object, arg_dict):
     else:
         return callable_object(**final_args)
 
-async def delegate_event(relevant_ids, arg_dict):
-    print(subscriptions)
-    print(relevant_ids)
+async def delegate_event(event_class, relevant_ids, arg_dict):
     for relevant_id in relevant_ids:
         for sub in subscriptions.get(relevant_id, []):
+            if not isinstance(sub.event, event_class):
+                continue
             function = sub.function
             call = fluid_call(function, arg_dict)
             asyncio.create_task(call)
@@ -218,7 +220,8 @@ async def on_message(message):
         'author':message.author
     }
 
-    await delegate_event(MessageSentEvent.get_relevant_ids(message), arg_dict)
+    e = MessageSentEvent
+    await delegate_event(e, e.get_relevant_ids(message), arg_dict)
 
     if message.author == client.user:
         return
@@ -269,7 +272,37 @@ async def on_message_delete(message):
         'author':message.author
     }
 
-    await delegate_event(MessageDeletedEvent.get_relevant_ids(message), arg_dict)
+    e = MessageDeletedEvent
+    await delegate_event(e, e.get_relevant_ids(message), arg_dict)
+
+@client.event
+async def on_reaction_add(reaction, user):
+    arg_dict = {
+        'reaction': reaction,
+        'user': user,
+        'message': reaction.message,
+        'channel': reaction.message.channel,
+        'guild' : reaction.message.guild,
+        'author' : reaction.message.author
+    }
+
+    e = ReactionAddedEvent
+    await delegate_event(e, e.get_relevant_ids(reaction, user), arg_dict)
+
+@client.event
+async def on_reaction_remove(reaction, user):
+    arg_dict = {
+        'reaction': reaction,
+        'user': user,
+        'message': reaction.message,
+        'channel': reaction.message.channel,
+        'guild' : reaction.message.guild,
+        'author' : reaction.message.author
+    }
+
+    e = ReactionRemovedEvent
+    await delegate_event(e, e.get_relevant_ids(reaction, user), arg_dict)
+
 
 # Finally, start the bot by running the client
 client.run(token)

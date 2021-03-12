@@ -62,6 +62,7 @@ class OmniInterface():
     def subscribe(self, event, function):
         subscription = Subscription(event, function)
         self.add_subscription(subscription)
+    
 
     def flush_buffers(self):
         """

@@ -34,8 +34,7 @@ class MessageSentEvent(Event):
     def get_relevant_ids(message):
         return (message.author.id, message.channel.id, message.guild.id)
 
-class MessageDeletedEvent(Event):
-
+class MessageChangedEvent(Event):
     @staticmethod
     def can_happen_to():
         return(
@@ -47,14 +46,29 @@ class MessageDeletedEvent(Event):
     def get_relevant_ids(message):
         return (message.id, message.channel.id, message.guild.id)
 
-class MessageEditedEvent(Event):
+class MessageDeletedEvent(MessageChangedEvent):
+    pass
+
+class MessageEditedEvent(MessageChangedEvent):
+    pass
+
+class ReactionEvent(Event):
     @staticmethod
     def can_happen_to():
         return(
-            discord.Message, discord.Guild, discord.TextChannel, 
+            discord.Message, discord.abc.User, discord.Guild, discord.TextChannel,
             discord.DMChannel, discord.GroupChannel
         )
-
+    
     @staticmethod
-    def get_relevant_ids(message):
-        return (message.id, message.channel.id, message.guild.id)
+    def get_relevant_ids(reaction, user):
+        return (
+            reaction.message.id, user.id, reaction.message.guild.id,
+            reaction.message.channel.id
+        )
+
+class ReactionAddedEvent(ReactionEvent):
+    pass
+
+class ReactionRemovedEvent(ReactionEvent):
+    pass
